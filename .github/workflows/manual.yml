@@ -4,19 +4,29 @@ name: Publish crates
 # or API.
 on:
   workflow_dispatch:
-
+env:
+  CRATES_TOKEN: ${{secrets.CRATES_TOKEN}}
+  
 jobs:
   publish_crates:
-  name: Build Modified CKB
-  runs-on: [ self-hosted, Linux, X64, building ]
-  steps:
-  - uses: actions/checkout@v2
-  - name: Publish crates
-    uses: nick-invision/retry@v2
-    with:
-      timeout_seconds: 7200
-      max_attempts: 3
-      retry_on: error
-      command: |
-        cargo login ${{secrets.CRATES_TOKEN}}
-        cargo publish
+    name: Publish crates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{github.ref}}
+      - name: Publish crates
+        uses: nick-invision/retry@v2
+        with:
+          timeout_seconds: 7200
+          max_attempts: 3
+          shell: bash
+          retry_on: error
+          command: |
+             pwd
+             ls -al
+             echo ${{secrets.CRATES_TOKEN}}
+             echo "${{ github.workspace }}"
+             cargo login ${CRATES_TOKEN}
+             chmod 777 devtools/test.sh
+             ./devtools/test.sh
